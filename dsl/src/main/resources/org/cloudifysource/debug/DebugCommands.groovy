@@ -24,7 +24,7 @@ import org.cloudifysource.dsl.context.ServiceContext
 //A class containing commands useful for debug of groovy scripts
 //it accepts cli arguments passed from a wrapper script
 class DebugCommands {
-    def debug(args) {
+    static def debug(args) {
         def cli = new CliBuilder(usage: "${this.class.name}.groovy OPTION", width:80)
         cli._(longOpt:'help', 'Show this usage information')
         cli._(longOpt:'print-context', 'Print the cloudify context for this instance')
