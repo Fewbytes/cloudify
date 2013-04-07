@@ -19,6 +19,7 @@ import org.cloudifysource.dsl.context.ServiceContext
 import org.cloudifysource.dsl.utils.ServiceUtils;
 
 import groovy.util.logging.*
+import com.j_spaces.kernel.Environment
 
 import java.util.logging.Logger
 
@@ -36,6 +37,7 @@ class DebugHook{
     private String waitForFinishLoop
     private boolean isGroovyScript
     private String scriptName
+    private File gsHomeDir
 
      //mode is one of:
 	 // #instead - just create debug environment instead of running the target script
@@ -61,6 +63,7 @@ class DebugHook{
 		 this.debugMode = mode
          this.keepaliveFilename = [this.serviceDir, ".cloudify_debugging.lock"].join(File.separator)
 
+         this.gsHomeDir = new File(Environment.getHomeDirectory())
 
          //this script accepts a lifecycle event script as arguments
 		 //and prepares the debug environment for it
@@ -142,6 +145,7 @@ export SERVICEDIR=\"${serviceDir}\"
 export SERVICESCRIPT=\"${serviceScript}\"
 export KEEPALIVE_FILE=\"${keepaliveFile}\"
 export DEBUG_GROOVY=\"${groovyDebugCommandsFile}\"
+export JSHOMEDIR=\"${gsHomeDir}\"
 
 echo Loading the debug environment...
 
@@ -154,7 +158,7 @@ cd \\\$SERVICEDIR
 #load cloudify environment variables saved for this lifecycle event
 source .cloudify_env
 
-export CLASSPATH=`find \\\$JSHOMEDIR/lib/{required,platform/cloudify} -name *.jar | paste -sd:`
+export CLASSPATH=`find \\\$JSHOMEDIR/lib/{required,platform/cloudify,platform/usm,platform/sigar} -name *.jar | paste -sd:`
 
 export PATH=\\\$JSHOMEDIR/tools/groovy/bin:\\\$PATH
 chmod +x \\\$DEBUG_GROOVY
@@ -320,6 +324,7 @@ env JAVA_OPTS=\"\${JAVA_DEBUG_OPTS}\" \$DEBUG_TARGET
 			  bashCommands: getBashCommands(),
 			  javaDebugParams: this.javaDebugParams,
 			  groovyDebugCommandsFile: this.groovyDebugCommandsFile,
+              gsHomeDir: this.gsHomeDir
 		 ])
 		 def targetDebugrc = new File(this.serviceDir, ".debugrc")
 		 targetDebugrc.withWriter() {it.write(preparedTemplate)}
